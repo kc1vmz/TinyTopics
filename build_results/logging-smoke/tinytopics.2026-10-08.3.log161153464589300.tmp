@@ -1,0 +1,7 @@
+2026-10-08T11:04:49.323-04:00  INFO 18984 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-08T11:04:50.965-04:00  INFO 18984 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on ports 18088 (http), 18089 (http) with context path '/'
+2026-10-08T11:04:50.995-04:00  INFO 18984 --- [main] c.k.tinytopics.TinyTopicsApplication     : Started TinyTopicsApplication in 8.179 seconds (process running for 8.965)
+2026-10-08T11:04:57.461-04:00  INFO 18984 --- [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-10-08T11:04:57.483-04:00  INFO 18984 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-10-08T11:04:57.492-04:00  INFO 18984 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-08T11:04:57.498-04:00  INFO 18984 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...

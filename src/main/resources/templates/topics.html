@@ -1,0 +1,27 @@
+<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--
+ *
+ * TinyTopics
+ * Copyright (c) 2026 John Rokicki KC1VMZ
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If not, see
+ * https://www.gnu.org/licenses/.
+ *
+ * http://www.kc1vmz.com
+-->    
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TinyTopics</title><link rel="stylesheet" href="/style.css"></head><body>
+<nav><h1>TinyTopics</h1><a class="button" href="/topics/new">Create topic</a></nav>
+<p>Manage reusable text and generated content. <a href="/swagger-ui.html">API documentation</a></p>
+<p class="card" th:if="${#lists.isEmpty(topics)}">No topics yet. Create a text topic or choose a generator.</p>
+<table th:unless="${#lists.isEmpty(topics)}"><thead><tr><th>Topic</th><th>Description</th><th>Type</th><th>Content source</th><th>Actions</th></tr></thead><tbody>
+<tr th:each="topic:${topics}"><td th:text="${topic.id}"></td><td th:text="${topic.description}"></td><td th:text="${topic.type}"></td><td th:text="${topic.contentSource}"></td><td class="actions"><a th:href="@{/topics/{id}(id=${topic.id})}">Edit</a> · <a th:href="@{/topics/{id}/preview(id=${topic.id})}">Preview</a> <form class="inline" th:action="@{/topics/{id}/delete(id=${topic.id})}" method="post" data-confirm="Delete this topic?" th:attr="data-confirm-topic=${topic.id}"><button class="danger">Delete</button></form></td></tr>
+</tbody></table><script src="/confirmations.js" defer></script></body></html>
+
+

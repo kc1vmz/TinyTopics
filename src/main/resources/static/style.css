@@ -1,0 +1,10 @@
+:root{font-family:system-ui,sans-serif;color:#183047;background:#f2f5f8}body{max-width:960px;margin:40px auto;padding:0 24px}nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}a{color:#14669a}h1{margin:0}table{width:100%;border-collapse:collapse;background:white}th,td{padding:14px;text-align:left;border-bottom:1px solid #dce4eb}form.card,.card{background:white;padding:24px;border-radius:10px;margin:20px 0}label{display:block;margin:16px 0 6px;font-weight:600}input,textarea,select{box-sizing:border-box;width:100%;padding:10px;border:1px solid #a7b6c3;border-radius:5px;font:inherit}textarea{min-height:100px}button,.button{display:inline-block;background:#14669a;color:white;padding:10px 16px;border:0;border-radius:5px;cursor:pointer;text-decoration:none;margin-top:16px}button.danger{background:#a33939}.inline{display:inline}.inline button{margin:0;padding:6px 10px}.error{background:#fff0ef;color:#922c26;padding:12px;border-radius:5px}small{color:#536778}pre{white-space:pre-wrap;overflow-wrap:anywhere}fieldset{border:1px solid #dce4eb;margin-top:20px}td.actions{white-space:nowrap} @media(max-width:650px){body{margin:20px auto}table{display:block;overflow-x:auto}nav{gap:16px}}
+:root { --dialog-border: #dce4eb; }
+.confirmation-dialog{width:min(440px,calc(100vw - 64px));padding:28px;border:1px solid var(--dialog-border);border-radius:14px;color:#183047;background:white;box-shadow:0 24px 70px #18304740}
+.confirmation-dialog::backdrop{background:#142b4680;backdrop-filter:blur(3px)}
+.confirmation-dialog h2{margin:0 0 12px;font-size:1.35rem}
+.confirmation-dialog p{line-height:1.6;margin:0;overflow-wrap:anywhere}
+.dialog-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:24px}
+.dialog-actions button{margin:0;font:inherit}
+button.secondary{background:#eaf0f5;color:#183047}
+button:focus-visible,a:focus-visible{outline:3px solid #4096cc;outline-offset:3px}

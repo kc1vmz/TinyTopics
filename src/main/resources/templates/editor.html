@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--
+ *
+ * TinyTopics
+ * Copyright (c) 2026 John Rokicki KC1VMZ
+ *
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with this program. If not, see
+ * https://www.gnu.org/licenses/.
+ *
+ * http://www.kc1vmz.com
+-->    
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Edit topic · TinyTopics</title><link rel="stylesheet" href="/style.css"></head><body>
+<nav><h1 th:text="${creating ? 'Create topic' : 'Edit topic'}"></h1><a href="/">All topics</a></nav>
+<p class="error" th:if="${error}" th:text="${error}"></p>
+<form class="card" th:object="${form}" th:action="${creating ? '/topics' : '/topics/' + form.id}" method="post">
+<label for="id">Topic ID</label><input id="id" th:field="*{id}" th:readonly="${!creating}" required maxlength="40" pattern="[a-z0-9-]{1,40}"><small>1–40 lowercase letters, digits, or dashes. Fixed after creation.</small>
+<label for="description">Description</label><textarea id="description" th:field="*{description}"></textarea>
+<label for="parameterNames">Parameter Names</label><textarea id="parameterNames" th:field="*{parameterNames}" th:readonly="${form.type == 'generated'}"></textarea><small>One per line. Generated topics use the selected generator's names. length and format are reserved.</small>
+<label for="type">Type</label><select id="type" th:field="*{type}" onchange="showType()"><option value="text">Text</option><option value="generated">Generated</option></select>
+<fieldset id="text-fields"><legend>Text choices</legend><label for="values">Values</label><textarea id="values" th:field="*{values}"></textarea><small>One nonblank value per line. Each request selects a random choice.</small></fieldset>
+<fieldset id="generated-fields"><legend>Generator</legend><label for="generatorName">Generator name</label><select id="generatorName" th:field="*{generatorName}" onchange="updateGeneratorParameters()"><option value="">Choose a generator</option><option th:each="name:${generators}" th:value="${name}" th:text="${name}" th:attr="data-parameter-names=${#strings.listJoin(generatorParameterNames.get(name), ',')}"></option></select><label for="settings">Saved settings</label><textarea id="settings" th:field="*{settings}"></textarea><small>One key=value per line. Defaults depend on the selected generator.</small></fieldset>
+<button>Save topic</button></form>
+<script src="/topic-editor.js"></script>
+</body></html>
