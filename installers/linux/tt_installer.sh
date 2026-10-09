@@ -92,8 +92,7 @@ if [ "$TT_OS" = "Linux" ]; then
 
   chmod +x tinytopics-$TT_VERSION.jar
 
-  if [[ "$TT_UPGRADE" =~ ^[Nn]$ ]]; then
-  else
+  if [[ "$TT_UPGRADE" =~ ^[Yy]$ ]]; then
     if [ -n "/etc/systemd/system/tinytopics.service+x" ]; then
       TT_INSTALL_SERVICES=Y
     else

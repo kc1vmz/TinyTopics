@@ -102,7 +102,7 @@ Topics can be edited and deleted as necessary. Click on the appropriate buttons 
 
 Topic responses can be obtained for each topic using HTTP.
 
-http://servername:READ_ONLY_PORT/topic-id?length=X&param1=value1&...
+http://servername:READ_ONLY_PORT/tinyTopicResult/topic-id?length=X&param1=value1&...
 
 Sending the request to the read-only API port, replace "topic-id" with the topic id specified when creating a topic. Parameter "length" is required to limit the length of the returned text.  Topics will only return text at or below that length.  Each parameter can then be added to the request in a parameter=value format.
 
