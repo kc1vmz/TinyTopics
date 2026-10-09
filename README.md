@@ -20,11 +20,17 @@ Whether on Linux or Microsoft Windows, each platform has an installation script 
 The installation asks for the following information:
 
 Where should Tiny Topics be installed?:
+
 Where should Tiny Topics database space be located?:
+
 Where should Tiny Topics temp space be located?:
+
 What port should the HTTP service listen on?:
+
 What port should the admin HTTP service listen on?:
+
 Do you want Tiny Topics to be configured as services and started at boot time (Y/n)?:  (Linux only)
+
 
 
 Tiny Topics uses a small file-based database to retain information.
