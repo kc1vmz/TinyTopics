@@ -93,7 +93,7 @@ National Weather Service Forecast - USA-based NWS forecast based on location (in
 
 Sunrise / sunset - learn today's sunrise and sunset based on location (internet-based)
 
-Fortune cookie - provide a glimpe into your future! (internet-based)
+Fortune cookie - provide a glimpse into your future! (internet-based)
 
 Magic 8 Ball - get a classic response from the Magic 8 ball!
 

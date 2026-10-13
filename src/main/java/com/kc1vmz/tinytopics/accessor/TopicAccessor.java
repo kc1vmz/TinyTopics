@@ -39,18 +39,36 @@ public class TopicAccessor {
         this.repository=repository; this.mapper=mapper; this.generators=generators;
     }
     public List<TinyTopicDefinition> list() {
-        return repository.findAll().stream().map(this::decode).sorted(Comparator.comparing(TinyTopicDefinition::id)).toList();
+        return repository.findAll().stream().map(this::decode).map(this::forDisplay).sorted(Comparator.comparing(TinyTopicDefinition::id)).toList();
     }
     public TinyTopicDefinition get(String id) {
+        return forDisplay(getForGeneration(id));
+    }
+    public TinyTopicDefinition getForGeneration(String id) {
         return decode(repository.findById(id).orElseThrow(() -> error(HttpStatus.NOT_FOUND,"Topic not found")));
     }
     public TinyTopicDefinition save(TinyTopicDefinition input, boolean create) {
         var topic=withSource(validate(input));
         if (create && repository.existsById(topic.id())) throw error(HttpStatus.CONFLICT,"Topic already exists");
         if (!create && !repository.existsById(topic.id())) throw error(HttpStatus.NOT_FOUND,"Topic not found");
+        var generator=topic.type()==TopicType.generated ? generators.get(topic.generatorName()) : null;
+        var settings=new LinkedHashMap<>(topic.generatorSettings());
+        if(generator!=null) {
+            var previous=create ? null : getForGeneration(topic.id());
+            for(String key:generator.secretSettingNames()) {
+                if("***".equals(settings.get(key))) {
+                    if(previous==null || !Objects.equals(previous.generatorName(),topic.generatorName()) || !previous.generatorSettings().containsKey(key))
+                        throw error(HttpStatus.BAD_REQUEST,"Enter a value for the secret setting: "+key);
+                    settings.put(key,previous.generatorSettings().get(key));
+                }
+            }
+        }
+        var credits=generator==null ? List.<com.kc1vmz.tinytopics.model.Attribution>of() : generator.attributions(Map.copyOf(settings));
+        topic=new TinyTopicDefinition(topic.id(),topic.description(),topic.parameterNames(),topic.type(),topic.values(),
+                topic.generatorName(),Map.copyOf(settings),topic.contentSource(),credits);
         try { repository.saveAndFlush(new TopicEntity(topic.id(),mapper.writeValueAsString(topic))); }
         catch (JsonProcessingException ex) { throw new IllegalStateException(ex); }
-        return topic;
+        return forDisplay(topic);
     }
     public void delete(String id) { get(id); repository.deleteById(id); }
     private TinyTopicDefinition validate(TinyTopicDefinition t) {
@@ -80,7 +98,17 @@ public class TopicAccessor {
                 : generator==null ? null : generator.contentSource();
         var parameters = generator==null ? topic.parameterNames() : List.copyOf(generator.parameterNames());
         return new TinyTopicDefinition(topic.id(), topic.description(), parameters, topic.type(),
-                topic.values(), topic.generatorName(), topic.generatorSettings(), source);
+                topic.values(), topic.generatorName(), topic.generatorSettings(), source,topic.attributions());
+    }
+    private TinyTopicDefinition forDisplay(TinyTopicDefinition topic) {
+        var generator=topic.type()==TopicType.generated ? generators.get(topic.generatorName()) : null;
+        var settings=new LinkedHashMap<>(topic.generatorSettings());
+        // Also mask known credential names on orphaned topics whose generator was removed.
+        var secrets=new HashSet<String>(); secrets.add("token");
+        if(generator!=null) secrets.addAll(generator.secretSettingNames());
+        for(String key:secrets) if(settings.containsKey(key)) settings.put(key,"***");
+        return new TinyTopicDefinition(topic.id(),topic.description(),topic.parameterNames(),topic.type(),topic.values(),
+                topic.generatorName(),Map.copyOf(settings),topic.contentSource(),topic.attributions());
     }
     public static ResponseStatusException error(HttpStatus status,String message) { return new ResponseStatusException(status,message); }
 }

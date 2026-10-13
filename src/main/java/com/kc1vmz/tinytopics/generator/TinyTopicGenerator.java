@@ -24,6 +24,8 @@ public interface TinyTopicGenerator {
     com.kc1vmz.tinytopics.model.ContentSource contentSource();
     String name();
     java.util.List<String> parameterNames();
+    default java.util.List<com.kc1vmz.tinytopics.model.Attribution> attributions(Map<String,String> settings) { return java.util.List.of(); }
+    default java.util.Set<String> secretSettingNames() { return java.util.Set.of(); }
     // Null denotes intentional no-content; exceptions denote generation failure.
     String generate(int length, DataFormat format, Map<String, String> parameters, Map<String, String> settings);
 }

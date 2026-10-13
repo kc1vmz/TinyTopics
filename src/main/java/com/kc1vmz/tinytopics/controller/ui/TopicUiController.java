@@ -57,6 +57,7 @@ public class TopicUiController {
         return editor(form,id==null,model);
     }
     private String editor(TopicForm form,boolean create,Model model) {
+        form.settings=form.settings.lines().map(line -> line.contains("=") && line.substring(0,line.indexOf('=')).trim().equals("token") ? "token=***" : line).collect(java.util.stream.Collectors.joining("\n"));
         model.addAttribute("form",form); model.addAttribute("creating",create); model.addAttribute("generators",generators.names());
         model.addAttribute("generatorParameterNames",generators.parameterNames()); return "editor";
     }

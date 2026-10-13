@@ -19,6 +19,7 @@ package com.kc1vmz.tinytopics.generator;
 
 import com.kc1vmz.tinytopics.model.DataFormat;
 import java.util.Map;
+import java.time.*;
 import org.junit.jupiter.api.*;
 import org.springframework.http.*;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -32,27 +33,29 @@ class SunriseSunsetGeneratorTest {
     private MockRestServiceServer server;
     private SunriseSunsetGenerator generator;
     private final Map<String,String> location = Map.of("x","-72.97","y","43.61");
-    private static final String URL = "https://api.sunrise-sunset.org/v2?lat=43.610000&lng=-72.970000&date=today";
+    private static final String URL = "https://aa.usno.navy.mil/api/rstt/oneday?date=2025-10-13&coords=43.610000,-72.970000&tz=0&dst=false";
     private static final String RESPONSE = """
-        {"date":"2026-10-07","tzid":"America/New_York","sunrise":"2026-10-07T07:02:30-04:00","sunset":"2026-10-07T18:23:45-04:00"}
+        {"properties":{"data":{"year":2025,"month":10,"day":13,"tz":0.0,"isdst":false,
+        "sundata":[{"phen":"Begin Civil Twilight","time":"04:52"},{"phen":"Rise","time":"05:20"},{"phen":"Set","time":"16:32"}],
+        "moondata":[{"phen":"Upper Transit","time":"04:40"},{"phen":"Set","time":"12:46"},{"phen":"Rise","time":"21:38"}]}}}
         """;
     @BeforeEach void setup() {
-        var builder = RestClient.builder().baseUrl("https://api.sunrise-sunset.org");
+        var builder = RestClient.builder().baseUrl("https://aa.usno.navy.mil");
         server = MockRestServiceServer.bindTo(builder).build();
-        generator = new SunriseSunsetGenerator(builder.build());
+        generator = new SunriseSunsetGenerator(builder.build(), Clock.fixed(Instant.parse("2025-10-13T00:30:00Z"), ZoneOffset.ofHours(-4)));
     }
     private void response(String json) {
         server.expect(requestTo(URL)).andRespond(withSuccess(json, MediaType.APPLICATION_JSON));
     }
-    @Test void returnsLocalTimesAndOverridesSavedCoordinates() {
+    @Test void returnsGmtSunAndMoonTimesAndOverridesSavedCoordinates() {
         response(RESPONSE);
-        assertEquals("Sunrise 07:02; sunset 18:23",
+        assertEquals("Sun rise 05:20Z set 16:32Z Moon rise 21:38Z set 12:46Z",
                 generator.generate(64,DataFormat.APRS,location,Map.of("x","0","y","0")));
         server.verify();
     }
     @Test void savedSettingsAndExactLength() {
         response(RESPONSE);
-        String expected = "Sunrise 07:02; sunset 18:23";
+        String expected = "Sun rise 05:20Z set 16:32Z Moon rise 21:38Z set 12:46Z";
         assertEquals(expected,generator.generate(expected.length(),DataFormat.UNICODE,Map.of(),location));
         server.verify();
     }
@@ -62,8 +65,8 @@ class SunriseSunsetGeneratorTest {
         server.verify();
     }
     @Test void polarAndIndependentMissingEventsAreMeaningfulResults() {
-        response("{\"date\":\"2026-10-07\",\"sunrise\":null,\"sunset\":null}");
-        assertEquals("Sunrise none; sunset none",generator.generate(64,DataFormat.UNICODE,location,Map.of()));
+        response("{\"properties\":{\"data\":{\"year\":2025,\"month\":10,\"day\":13,\"tz\":0,\"sundata\":[{\"phen\":\"Rise\",\"time\":null}],\"moondata\":[{\"phen\":\"Set\",\"time\":\"12:46\"}]}}}");
+        assertEquals("Sun rise none set none Moon rise none set 12:46Z",generator.generate(64,DataFormat.UNICODE,location,Map.of()));
         server.verify();
     }
     @Test void rejectsInvalidCoordinatesWithoutNetwork() {

@@ -21,5 +21,6 @@
 <form class="card" method="get"><label for="length">Maximum length (required)</label><input id="length" name="length" type="number" min="1" max="4096" required th:value="${query.get('length')}"><label for="format">Format</label><select id="format" name="format"><option value="UNICODE" th:selected="${query.get('format') != 'APRS'}">UNICODE</option><option value="APRS" th:selected="${query.get('format') == 'APRS'}">APRS</option></select>
 <th:block th:each="name:${topic.parameterNames}"><label th:for="${'param-' + name}" th:text="${name + ' (optional)'}"></label><input th:id="${'param-' + name}" th:name="${name}" th:value="${query.get(name)}"></th:block><button>Request result</button></form>
 <section class="card" th:if="${result}"><h2 th:text="${result.status}"></h2><p th:text="${result.requestedAt}"></p><p class="error" th:if="${result.errorMessage}" th:text="${result.errorMessage}"></p><pre th:if="${result.text != null}" th:text="${result.text}"></pre><p th:if="${result.status.name() == 'NO_CONTENT'}">The generator intentionally returned no content.</p></section>
-<p th:if="${topic.generatorName == 'sunrise-sunset'}">Solar times provided by <a href="https://sunrise-sunset.org">Sunrise-Sunset.org</a>.</p>
+<p th:if="${topic.generatorName == 'sunrise-sunset'}">Sun and Moon times provided by the <a href="https://aa.usno.navy.mil/data/api">U.S. Naval Observatory</a>.</p>
+<p th:each="credit:${topic.attributions}">Source: <a th:href="${credit.url}" th:text="${credit.name}"></a></p>
 </body></html>

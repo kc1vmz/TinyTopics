@@ -29,9 +29,17 @@ public record TinyTopicDefinition(
         @Schema(requiredMode=Schema.RequiredMode.REQUIRED) TopicType type,
         @Schema(description="Text choices. One is selected randomly before length/format validation.", example="[\"Welcome!\",\"Hello there!\"]") List<String> values,
         @Schema(description="Name returned by GET /api/v1/generators; required for generated topics", example="magic-8-ball") String generatorName,
-        @Schema(description="Saved generator configuration/defaults. Interpretation is generator-specific; NWS and solar generators accept x/y location defaults.", example="{}") Map<String, String> generatorSettings,
+        @Schema(description="Saved generator configuration/defaults. AQI requires saved x, y, token. Secret token values appear as ***; send *** back unchanged to preserve them on edit. AQI defaults dayOffset=1 and maxAgeHours=2.", example="{}") Map<String, String> generatorSettings,
         @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
-        @Schema(description="Derived from topic type and generator; cannot be overridden by callers.", accessMode=Schema.AccessMode.READ_ONLY) ContentSource contentSource) {
+        @Schema(description="Derived from topic type and generator; cannot be overridden by callers.", accessMode=Schema.AccessMode.READ_ONLY) ContentSource contentSource,
+        @Schema(description="Generator credits resolved from saved settings on save; request overrides do not change them.", accessMode=Schema.AccessMode.READ_ONLY) List<Attribution> attributions) {
+    public TinyTopicDefinition {
+        attributions = attributions == null ? List.of() : List.copyOf(attributions);
+    }
+    public TinyTopicDefinition(String id, String description, List<String> parameterNames,
+            TopicType type, List<String> values, String generatorName, Map<String,String> generatorSettings, ContentSource contentSource) {
+        this(id, description, parameterNames, type, values, generatorName, generatorSettings, contentSource, List.of());
+    }
     public TinyTopicDefinition(String id, String description, List<String> parameterNames,
             TopicType type, List<String> values, String generatorName, Map<String,String> generatorSettings) {
         this(id, description, parameterNames, type, values, generatorName, generatorSettings, null);

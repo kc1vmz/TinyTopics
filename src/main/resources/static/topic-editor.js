@@ -2,6 +2,9 @@ const parameterField = document.getElementById('parameterNames');
 let textParameterNames = document.getElementById('type').value === 'text' ? parameterField.value : '';
 
 function updateGeneratorParameters() {
+    const help = document.getElementById('aqi-settings-help');
+    if (help) help.hidden = document.getElementById('type').value !== 'generated'
+        || document.getElementById('generatorName').value !== 'aqi-forecast';
     if (document.getElementById('type').value !== 'generated') return;
     const selected = document.getElementById('generatorName').selectedOptions[0];
     const names = selected?.dataset.parameterNames || '';
@@ -16,5 +19,7 @@ function showType() {
     parameterField.readOnly = !text;
     if (text) parameterField.value = textParameterNames;
     else updateGeneratorParameters();
+    const help = document.getElementById('aqi-settings-help');
+    if (text && help) help.hidden = true;
 }
 showType();

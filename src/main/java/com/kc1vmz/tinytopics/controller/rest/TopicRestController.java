@@ -40,7 +40,7 @@ public class TopicRestController {
     private final ResultAccessor results;
     private final GeneratorRegistry generators;
     public TopicRestController(TopicAccessor topics,ResultAccessor results,GeneratorRegistry generators) { this.topics=topics; this.results=results; this.generators=generators; }
-    @Operation(summary="List topic definitions", description="Includes the derived Internet/Local content source for each topic.")
+    @Operation(summary="List topic definitions", description="Includes the derived Internet/Local content source and saved-location attributions. Secret settings are masked.")
     @GetMapping("/tinyTopicDefinition") public List<TinyTopicDefinition> list() { return topics.list(); }
     @Operation(summary="Get a topic definition")
     @ApiResponse(responseCode="404", description="Unknown topic", content=@Content(schema=@Schema(implementation=ApiError.class)))
@@ -72,7 +72,8 @@ public class TopicRestController {
     @Operation(summary="Request a topic result", description="Create the topic first. length is required and counts Unicode code points. "
             + "format defaults to UNICODE; APRS requires printable ASCII excluding {. "
             + "Only declared topic parameter names are accepted; all are optional and must occur once. "
-            + "For NWS/solar generators use x=longitude and y=latitude; NWS forecast also accepts wfo and dayOffset. "
+            + "For NWS/solar/AQI generators use x=longitude and y=latitude; NWS forecast also accepts wfo and dayOffset. "
+            + "AQI uses dayOffset=1 by default and maxAgeHours=2; its token must be saved in generatorSettings. "
             + "dayOffset is an optional nonnegative integer, default 0: 0=today, 1=tomorrow, etc., in the location's time zone. "
             + "Generated topic definitions automatically list the selected generator's supported parameterNames. "
             + "Supply generator-specific parameters as the exploded parameters object, e.g. {\"x\":\"-72.97\",\"y\":\"43.61\"}. "

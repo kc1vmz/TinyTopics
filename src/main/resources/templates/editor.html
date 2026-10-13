@@ -26,6 +26,7 @@
 <label for="type">Type</label><select id="type" th:field="*{type}" onchange="showType()"><option value="text">Text</option><option value="generated">Generated</option></select>
 <fieldset id="text-fields"><legend>Text choices</legend><label for="values">Values</label><textarea id="values" th:field="*{values}"></textarea><small>One nonblank value per line. Each request selects a random choice.</small></fieldset>
 <fieldset id="generated-fields"><legend>Generator</legend><label for="generatorName">Generator name</label><select id="generatorName" th:field="*{generatorName}" onchange="updateGeneratorParameters()"><option value="">Choose a generator</option><option th:each="name:${generators}" th:value="${name}" th:text="${name}" th:attr="data-parameter-names=${#strings.listJoin(generatorParameterNames.get(name), ',')}"></option></select><label for="settings">Saved settings</label><textarea id="settings" th:field="*{settings}"></textarea><small>One key=value per line. Defaults depend on the selected generator.</small></fieldset>
+<p id="aqi-settings-help" hidden><small>Saved settings require x, y, and token. token=*** preserves an existing token on edit. Defaults: dayOffset=1 and maxAgeHours=2. Source credits refresh when saved.</small></p>
 <button>Save topic</button></form>
 <script src="/topic-editor.js"></script>
 </body></html>

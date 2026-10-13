@@ -39,18 +39,19 @@ public class SunriseSunsetGenerator implements TinyTopicGenerator {
 
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
     private final RestClient client;
+    private final Clock clock;
 
     @Autowired
-    public SunriseSunsetGenerator() { this(createClient()); }
+    public SunriseSunsetGenerator() { this(createClient(), Clock.systemUTC()); }
 
-    SunriseSunsetGenerator(RestClient client) { this.client = client; }
+    SunriseSunsetGenerator(RestClient client, Clock clock) { this.client = client; this.clock = clock; }
 
     private static RestClient createClient() {
         var http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         var factory = new JdkClientHttpRequestFactory(http);
         factory.setReadTimeout(Duration.ofSeconds(10));
-        return RestClient.builder().baseUrl("https://api.sunrise-sunset.org").requestFactory(factory)
-                .defaultHeader("User-Agent", "TinyTopics/0.0.1").defaultHeader("Accept", "application/json").build();
+        return RestClient.builder().baseUrl("https://aa.usno.navy.mil").requestFactory(factory)
+                .defaultHeader("User-Agent", "TinyTopics/1.0.0").defaultHeader("Accept", "application/json").build();
     }
 
     @Override public String name() { return "sunrise-sunset"; }
@@ -59,34 +60,42 @@ public class SunriseSunsetGenerator implements TinyTopicGenerator {
     public String generate(int length, DataFormat format, Map<String,String> parameters, Map<String,String> settings) {
         String longitude = coordinate("x", 180, parameters, settings);
         String latitude = coordinate("y", 90, parameters, settings);
+        LocalDate date = LocalDate.now(clock.withZone(ZoneOffset.UTC));
         JsonNode response;
         try {
-            response = client.get().uri(uri -> uri.path("/v2").queryParam("lat", latitude)
-                    .queryParam("lng", longitude).queryParam("date", "today").build()).retrieve().body(JsonNode.class);
-        } catch (Exception ex) { throw error(HttpStatus.BAD_GATEWAY, "Sunrise-Sunset service is unavailable or returned invalid data"); }
+            response = client.get().uri(uri -> uri.path("/api/rstt/oneday").queryParam("date", date)
+                    .queryParam("coords", latitude + "," + longitude).queryParam("tz", 0)
+                    .queryParam("dst", false).build()).retrieve().body(JsonNode.class);
+        } catch (Exception ex) { throw error(HttpStatus.BAD_GATEWAY, "USNO service is unavailable or returned invalid data"); }
         if (response == null || response.has("error"))
-            throw error(HttpStatus.BAD_GATEWAY, "Sunrise-Sunset service returned an error");
+            throw error(HttpStatus.BAD_GATEWAY, "USNO service returned an error");
         try {
-            LocalDate date = LocalDate.parse(response.path("date").asText());
-            String sunrise = event(response, "sunrise", date);
-            String sunset = event(response, "sunset", date);
-            String text = "Sunrise " + sunrise + "; sunset " + sunset;
+            JsonNode data = response.path("properties").path("data");
+            if (!data.path("tz").isNumber() || data.path("tz").asDouble() != 0 || data.path("isdst").asBoolean())
+                throw new IllegalArgumentException("USNO response is not GMT");
+            LocalDate returnedDate = LocalDate.of(data.path("year").asInt(), data.path("month").asInt(), data.path("day").asInt());
+            if (!returnedDate.equals(date)) throw new IllegalArgumentException("USNO response date does not match");
+            String text = "Sun rise " + event(data.path("sundata"), "Rise") + " set " + event(data.path("sundata"), "Set")
+                    + " Moon rise " + event(data.path("moondata"), "Rise") + " set " + event(data.path("moondata"), "Set");
             if (text.codePointCount(0, text.length()) > length)
-                throw error(HttpStatus.UNPROCESSABLE_ENTITY, "Sunrise and sunset times cannot fit the requested length");
+                throw error(HttpStatus.UNPROCESSABLE_ENTITY, "Sun and Moon rise/set times cannot fit the requested length");
             // Output uses only ASCII digits, punctuation, and labels for both formats.
             return text;
         } catch (DateTimeException | IllegalArgumentException ex) {
-            throw error(HttpStatus.BAD_GATEWAY, "Sunrise-Sunset service returned invalid dates or times");
+            throw error(HttpStatus.BAD_GATEWAY, "USNO service returned invalid dates or times");
         }
     }
 
-    private static String event(JsonNode response, String field, LocalDate date) {
-        JsonNode value = response.get(field);
-        if (value == null) throw new IllegalArgumentException("Missing solar event");
-        if (value.isNull()) return "none";
-        OffsetDateTime time = OffsetDateTime.parse(value.asText());
-        if (!time.toLocalDate().equals(date)) throw new IllegalArgumentException("Event date does not match requested day");
-        return TIME.format(time);
+    private static String event(JsonNode events, String phenomenon) {
+        if (!events.isArray()) throw new IllegalArgumentException("Missing event list");
+        for (JsonNode event : events) {
+            if (!phenomenon.equals(event.path("phen").asText())) continue;
+            JsonNode value = event.get("time");
+            if (value == null) throw new IllegalArgumentException("Missing event time");
+            if (value.isNull() || "null".equals(value.asText())) return "none";
+            return TIME.format(LocalTime.parse(value.asText())) + "Z";
+        }
+        return "none";
     }
 
     private static String coordinate(String key, int limit, Map<String,String> parameters, Map<String,String> settings) {

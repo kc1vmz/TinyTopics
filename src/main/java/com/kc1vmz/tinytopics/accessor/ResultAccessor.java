@@ -45,7 +45,7 @@ public class ResultAccessor {
             DataFormat format;
             try { format=DataFormat.valueOf(query.getFirst("format")==null ? "UNICODE" : query.getFirst("format")); }
             catch(IllegalArgumentException ex) { throw TopicAccessor.error(HttpStatus.BAD_REQUEST,"format must be APRS or UNICODE"); }
-            var topic=topics.get(id);
+            var topic=topics.getForGeneration(id);
             if(!topic.parameterNames().containsAll(parameters.keySet())) throw TopicAccessor.error(HttpStatus.BAD_REQUEST,"Unknown topic parameter");
             String text;
             try {
@@ -64,6 +64,9 @@ public class ResultAccessor {
         }
     }
     private ResponseEntity<TinyTopicResult> response(HttpStatus status,TinyTopicResult result) {
+        var safeParameters=new LinkedHashMap<>(result.parameters());
+        safeParameters.remove("token");
+        result=new TinyTopicResult(result.topicId(),result.requestedAt(),safeParameters,result.status(),result.text(),result.errorMessage());
         return ResponseEntity.status(status).cacheControl(CacheControl.noStore()).body(result);
     }
 }
