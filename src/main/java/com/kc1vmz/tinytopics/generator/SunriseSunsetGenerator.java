@@ -51,7 +51,7 @@ public class SunriseSunsetGenerator implements TinyTopicGenerator {
         var factory = new JdkClientHttpRequestFactory(http);
         factory.setReadTimeout(Duration.ofSeconds(10));
         return RestClient.builder().baseUrl("https://aa.usno.navy.mil").requestFactory(factory)
-                .defaultHeader("User-Agent", "TinyTopics/1.0.0").defaultHeader("Accept", "application/json").build();
+                .defaultHeader("User-Agent", "TinyTopics/1.0.1").defaultHeader("Accept", "application/json").build();
     }
 
     @Override public String name() { return "sunrise-sunset"; }

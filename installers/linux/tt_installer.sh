@@ -35,7 +35,7 @@ if [ "$TT_OS" = "Linux" ]; then
   fi
 
   # default environment variables
-  TT_VERSION=1.0.0
+  TT_VERSION=1.0.1
   TT_INSTALL_DIR=~/tinytopics
   TT_DB_DIR=~/tinytopics/db
   TT_TEMP_DIR=~/tinytopics/tmp
